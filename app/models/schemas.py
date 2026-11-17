@@ -1,6 +1,6 @@
-"""Pydantic models shared by the answer-generation layer and API."""
+"""Pydantic models used by the API and answer-generation service."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Citation(BaseModel):
@@ -15,3 +15,19 @@ class AnswerResult(BaseModel):
 
     answer: str
     citations: list[Citation]
+
+
+class AskRequest(BaseModel):
+    """Validated request body for the question-answering endpoint."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    question: str = Field(min_length=1, max_length=1_000)
+    top_k: int = Field(default=4, ge=1, le=10)
+
+
+class AskResponse(AnswerResult):
+    """Answer payload returned by the API."""
+
+    retrieval_count: int = Field(ge=0)
+    latency_ms: float = Field(ge=0)

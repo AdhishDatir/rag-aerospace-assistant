@@ -26,11 +26,13 @@ class QAService:
         client: httpx.Client,
         model: str,
         base_url: str,
+        max_evidence_distance: float = 0.75,
     ) -> None:
         """Receive dependencies explicitly for easy testing."""
         self.client = client
         self.model = model
         self.generate_url = f"{base_url.rstrip('/')}/api/generate"
+        self.max_evidence_distance = max_evidence_distance
 
     def answer_question(
         self,
@@ -39,6 +41,10 @@ class QAService:
     ) -> AnswerResult:
         """Answer using retrieved evidence, or return the fallback."""
         if not retrieved_chunks:
+            return AnswerResult(answer=NOT_FOUND_MESSAGE, citations=[])
+
+        best_distance = min(chunk.distance for chunk in retrieved_chunks)
+        if best_distance > self.max_evidence_distance:
             return AnswerResult(answer=NOT_FOUND_MESSAGE, citations=[])
 
         source_excerpts = "\n\n".join(

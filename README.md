@@ -1,181 +1,158 @@
 # Aerospace RAG Assistant
 
-A Retrieval-Augmented Generation (RAG) question-answering assistant for aerospace and engineering technical documents, beginning with public FAA and NASA PDFs.
+A local Retrieval-Augmented Generation (RAG) assistant for aerospace engineering documents. It indexes public FAA/NASA PDFs, retrieves relevant evidence, answers only from that evidence, and returns document/page citations.
 
-The assistant retrieves relevant passages from source documents, generates a grounded answer, and returns citations containing the document name and page number.
+## Features
 
-## Current progress
-
-- [x] Python project structure and virtual environment
-- [x] FastAPI health endpoint
-- [x] Pytest setup
-- [x] Page-aware PDF text extraction with PyMuPDF
-- [ ] Chunking and vector storage
-- [ ] Retrieval and grounded LLM answers
-- [ ] `/ask` API endpoint
-- [ ] Streamlit user interface
-- [ ] Retrieval evaluation
-- [ ] Docker and GitHub Actions CI
+- Page-aware PDF extraction with PyMuPDF
+- Overlapping text chunks with document and page metadata
+- Local Sentence Transformer embeddings stored in Chroma
+- Semantic retrieval with top-k results
+- Grounded local answers with Ollama and Qwen 2.5 3B
+- Deterministic `not found in the documents` fallback for missing or weak evidence
+- FastAPI `POST /ask` endpoint with latency/failure logging
+- Streamlit browser UI
+- 20-question labelled retrieval benchmark
+- Pytest, Docker, and GitHub Actions CI
 
 ## Architecture
 
 ```mermaid
-flowchart TD
-    A[Public FAA / NASA PDFs] --> B[PDF Loader]
-    B --> C[Page-Aware Text Extraction]
-    C --> D[Text Chunker]
-    D --> E[Local Embedding Model]
-    E --> F[Chroma Vector Database]
-
-    U[User Question] --> G[FastAPI /ask Endpoint]
-    G --> H[Retriever]
-    H --> F
-    F --> I[Relevant Chunks with Page Metadata]
-    I --> J[OpenAI LLM]
-    J --> K[Grounded Answer]
-    K --> L[Answer with Document and Page Citations]
-
-    M[Evaluation Questions] --> N[Retrieval Evaluation Script]
-    N --> H
+flowchart LR
+    A[FAA / NASA PDF] --> B[PyMuPDF extraction]
+    B --> C[Page-aware chunks]
+    C --> D[Sentence Transformer]
+    D --> E[(Chroma)]
+    U[User question] --> F[FastAPI /ask]
+    F --> G[Retriever]
+    G --> E
+    E --> H[Relevant chunks + citations]
+    H --> I[Local Ollama model]
+    I --> J[Grounded answer]
+    J --> K[Streamlit UI / API response]
 ```
 
-## Technology choices
+## Stack
 
-| Area | Tool | Reason |
-|---|---|---|
-| Backend API | FastAPI | Typed, fast, and provides automatic API documentation |
-| PDF extraction | PyMuPDF | Extracts text page by page for accurate citations |
-| Embeddings | Sentence Transformers | Free local semantic embeddings |
-| Vector database | Chroma | Simple persistent vector storage with metadata |
-| LLM | OpenAI Responses API | Generates grounded natural-language answers |
-| UI | Streamlit | Quick interface for asking questions and viewing sources |
-| Tests | pytest | Standard Python testing framework |
-| Configuration | Pydantic Settings and `.env` | Typed settings without committing secrets |
-
-## Project structure
-
-```text
-rag-aerospace-assistant/
-├── app/
-│   ├── api/                 # FastAPI route definitions
-│   ├── core/                # Settings and logging
-│   ├── ingestion/           # PDF extraction and chunking
-│   ├── models/              # Pydantic request/response models
-│   ├── retrieval/           # Embeddings, vector store, retrieval
-│   ├── services/            # Grounded LLM question-answering service
-│   └── main.py              # FastAPI entry point
-├── data/
-│   ├── raw/                 # Source PDFs; ignored by Git
-│   └── chroma/              # Local vector database; ignored by Git
-├── evaluation/              # Retrieval benchmark questions and script
-├── tests/                   # Automated tests
-├── ui/                      # Streamlit interface
-├── .env.example             # Safe configuration template
-├── .gitignore
-├── requirements.txt
-└── README.md
-```
+| Area | Choice |
+| --- | --- |
+| API | FastAPI |
+| Extraction | PyMuPDF |
+| Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
+| Vector database | Chroma |
+| Answer model | Ollama with `qwen2.5:3b` |
+| UI | Streamlit |
+| Tests / CI | pytest / GitHub Actions |
 
 ## Setup
-
-### 1. Clone the repository
 
 ```powershell
 git clone https://github.com/AdhishDatir/rag-aerospace-assistant.git
 cd rag-aerospace-assistant
-```
-
-### 2. Create and activate a virtual environment
-
-```powershell
 py -3.13 -m venv .venv
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
-```
-
-### 3. Install dependencies
-
-```powershell
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-### 4. Run tests
+Install [Ollama for Windows](https://ollama.com/download/windows), then download the local model:
 
 ```powershell
-python -m pytest
+ollama pull qwen2.5:3b
 ```
 
-## Run the API
-
-```powershell
-fastapi dev app/main.py
-```
-
-Then visit:
-
-```text
-http://127.0.0.1:8000/health
-```
-
-Expected response:
-
-```json
-{"status":"ok"}
-```
-
-## Source document
-
-The initial source document is the FAA Advisory Circular 43-204, *Visual Inspection for Aircraft*.
-
-Download it into `data/raw`:
-
-```powershell
-Invoke-WebRequest `
-  -Uri "https://www.faa.gov/documentLibrary/media/Advisory_Circular/43-204.pdf" `
-  -OutFile ".\data\raw\faa_ac_43_204.pdf"
-```
-
-Inspect page-aware text extraction:
-
-```powershell
-python -m app.ingestion.inspect_pdf --pdf .\data\raw\faa_ac_43_204.pdf
-```
-
-## Security
-
-Never commit API keys.
-
-Copy `.env.example` to `.env` when the LLM integration is added:
+Create `.env` from the safe template:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Then add your key locally:
+Default local configuration:
 
 ```env
-OPENAI_API_KEY=your_key_here
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:3b
+MAX_EVIDENCE_DISTANCE=0.75
 ```
 
-The `.env` file is excluded from version control by `.gitignore`.
+No API key is required. `.env` is ignored by Git.
+
+## Index a document
+
+```powershell
+Invoke-WebRequest `
+  -Uri "https://www.faa.gov/documentLibrary/media/Advisory_Circular/43-204.pdf" `
+  -OutFile ".\data\raw\faa_ac_43_204.pdf"
+
+python -m app.ingestion.index_pdf --pdf .\data\raw\faa_ac_43_204.pdf
+```
+
+## Run
+
+Start the API:
+
+```powershell
+fastapi dev app/main.py
+```
+
+Open `http://127.0.0.1:8000/docs` to try `POST /ask`, or call it directly:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://127.0.0.1:8000/ask" `
+  -ContentType "application/json" `
+  -Body '{"question":"What is the purpose of visual inspection for aircraft?","top_k":3}'
+```
+
+In another terminal, run the UI:
+
+```powershell
+streamlit run ui/streamlit_app.py
+```
+
+## Evaluation
+
+Run the 20-question benchmark:
+
+```powershell
+python -m evaluation.evaluate_retrieval --top-k 4
+```
+
+A hit requires a top-k result from the expected document containing every manually labelled evidence term. The script reports the real top-k retrieval accuracy for the current index. Use that reported number—not an invented value—in a resume.
+
+## Testing
+
+```powershell
+python -m pytest
+```
+
+The test suite has no API-key, Ollama, PDF-download, or prebuilt-index dependency.
+
+## Docker
+
+Build:
+
+```powershell
+docker build -t aerospace-rag-assistant .
+```
+
+Run with your local Chroma database and Ollama instance:
+
+```powershell
+docker run --rm -p 8000:8000 `
+  -e OLLAMA_BASE_URL=http://host.docker.internal:11434 `
+  -v "${PWD}\data\chroma:/app/data/chroma" `
+  aerospace-rag-assistant
+```
 
 ## Grounding policy
 
-The assistant will use only the retrieved PDF passages as evidence. If the retrieved context does not support an answer, it will respond:
+The model receives only retrieved excerpts. If no chunks are retrieved, the closest chunk is beyond the relevance threshold, or the model explicitly declines, the response is exactly:
 
 ```text
 not found in the documents
 ```
 
-## Evaluation
-
-The final project will include 20–30 known-answer questions. Retrieval performance will be measured as top-k recall:
-
-```text
-Retrieval accuracy = questions where the expected passage appears in top-k / total questions
-```
-
-## License
-
-This project is intended for learning and portfolio use. Source documents remain subject to the terms of their original public publishers.
+Prompting alone cannot prove factuality, so the system combines the prompt with a deterministic distance cutoff, citations derived from retrieval metadata, tests, and retrieval evaluation.

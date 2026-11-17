@@ -2,6 +2,7 @@
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import httpx
 from fastapi import FastAPI
@@ -25,7 +26,7 @@ async def lifespan(app: FastAPI):
     logger.info("Loading RAG resources", extra={"event": "startup_started"})
 
     embedding_service = EmbeddingService()
-    vector_store = ChromaVectorStore("data/chroma")
+    vector_store = ChromaVectorStore(Path(settings.chroma_path))
 
     app.state.retriever = Retriever(embedding_service, vector_store)
     app.state.ollama_client = httpx.Client(timeout=120.0)
@@ -33,6 +34,7 @@ async def lifespan(app: FastAPI):
         client=app.state.ollama_client,
         model=settings.ollama_model,
         base_url=settings.ollama_base_url,
+        max_evidence_distance=settings.max_evidence_distance,
     )
 
     logger.info("RAG resources ready", extra={"event": "startup_completed"})

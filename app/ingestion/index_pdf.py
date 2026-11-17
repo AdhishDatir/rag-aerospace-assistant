@@ -21,6 +21,11 @@ def main() -> None:
         default=Path("data/chroma"),
         help="Directory where Chroma stores vectors.",
     )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Delete the existing collection before indexing this document.",
+    )
     args = parser.parse_args()
 
     pages = extract_pdf_pages(args.pdf)
@@ -32,6 +37,9 @@ def main() -> None:
     )
 
     vector_store = ChromaVectorStore(args.database_path)
+    if args.reset:
+        vector_store.client.delete_collection("aerospace_documents")
+        vector_store = ChromaVectorStore(args.database_path)
     stored_count = vector_store.upsert_chunks(chunks, embeddings)
 
     print(f"Document: {args.pdf.name}")

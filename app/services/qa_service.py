@@ -77,12 +77,17 @@ class QAService:
         if not answer or answer.lower() == NOT_FOUND_MESSAGE:
             return AnswerResult(answer=NOT_FOUND_MESSAGE, citations=[])
 
-        citations = [
-            Citation(
-                document_name=chunk.document_name,
-                page_number=chunk.page_number,
-            )
-            for chunk in retrieved_chunks
-        ]
+        citations: list[Citation] = []
+        seen_sources: set[tuple[str, int]] = set()
+        for chunk in retrieved_chunks:
+            source = (chunk.document_name, chunk.page_number)
+            if source not in seen_sources:
+                citations.append(
+                    Citation(
+                        document_name=chunk.document_name,
+                        page_number=chunk.page_number,
+                    )
+                )
+                seen_sources.add(source)
 
         return AnswerResult(answer=answer, citations=citations)

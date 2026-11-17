@@ -1,0 +1,22 @@
+[
+  {"id":"ac43_204_01","question":"Who does AC 43-204 provide technical information for?","expected_document":"faa_ac_43_204.pdf","expected_terms":["technical information","visual inspection of aircraft"]},
+  {"id":"ac43_204_02","question":"When does a manufacturer inspection schedule take precedence over AC 43-204?","expected_document":"faa_ac_43_204.pdf","expected_terms":["recommended inspection schedule","take precedence"]},
+  {"id":"ac43_204_03","question":"What overall assessment can visual inspection provide?","expected_document":"faa_ac_43_204.pdf","expected_terms":["overall assessment","structure, component, or system"]},
+  {"id":"ac43_204_04","question":"Why is early defect detection important in visual inspection?","expected_document":"faa_ac_43_204.pdf","expected_terms":["early detection of defects","critical size"]},
+  {"id":"ac43_204_05","question":"What manufacturing issue can visual inspection detect?","expected_document":"faa_ac_43_204.pdf","expected_terms":["errors","manufacturing process"]},
+  {"id":"ac43_204_06","question":"Which FAA documents can mandate visual procedures for structural inspections?","expected_document":"faa_ac_43_204.pdf","expected_terms":["Supplementary Structural Inspection Documents","Airworthiness Directives"]},
+  {"id":"ac43_204_07","question":"What are the three main types of airframe defects detectable by visual inspection?","expected_document":"faa_ac_43_204.pdf","expected_terms":["cracks","corrosion","disbanding"]},
+  {"id":"ac43_204_08","question":"Why is disbonding difficult to find by visual means?","expected_document":"faa_ac_43_204.pdf","expected_terms":["difficult to detect disbonding","internal condition"]},
+  {"id":"ac43_204_09","question":"What knowledge should inspection personnel have about an aircraft?","expected_document":"faa_ac_43_204.pdf","expected_terms":["working knowledge","aircraft being inspected"]},
+  {"id":"ac43_204_10","question":"What lighting condition should inspectors avoid?","expected_document":"faa_ac_43_204.pdf","expected_terms":["excessive glare","should be avoided"]},
+  {"id":"ac43_204_11","question":"How should inspection safety hazards be handled?","expected_document":"faa_ac_43_204.pdf","expected_terms":["safety hazards","eliminated or minimized"]},
+  {"id":"ac43_204_12","question":"Why can complete engine visual inspections require removal from an aircraft?","expected_document":"faa_ac_43_204.pdf","expected_terms":["complete and rigorous engine inspections","full teardown"]},
+  {"id":"ac43_204_13","question":"How is corrosion primarily detected according to AC 43-204?","expected_document":"faa_ac_43_204.pdf","expected_terms":["Corrosion is primarily detected","visual inspection"]},
+  {"id":"ac43_204_14","question":"What tool is illustrated for inspecting surface cracks?","expected_document":"faa_ac_43_204.pdf","expected_terms":["flashlight","surface cracks"]},
+  {"id":"ac43_204_15","question":"What should rivets and bolts be inspected for?","expected_document":"faa_ac_43_204.pdf","expected_terms":["looseness","proper size and fit","corrosion"]},
+  {"id":"ac43_204_16","question":"Which aircraft locations are likely corrosion sites?","expected_document":"faa_ac_43_204.pdf","expected_terms":["galleys","lavatories","tank drains"]},
+  {"id":"ac43_204_17","question":"Name visual clues of surface discontinuities on an aircraft.","expected_document":"faa_ac_43_204.pdf","expected_terms":["buckled, bulging, or dented skin","chafed electrical wiring"]},
+  {"id":"ac43_204_18","question":"How often should aircraft be inspected for corrosion?","expected_document":"faa_ac_43_204.pdf","expected_terms":["continuing requirement","daily basis"]},
+  {"id":"ac43_204_19","question":"What is uniform etch corrosion?","expected_document":"faa_ac_43_204.pdf","expected_terms":["Uniform etch corrosion","uniform chemical attack"]},
+  {"id":"ac43_204_20","question":"What ceiling reflectance range is recommended for industrial lighting?","expected_document":"faa_ac_43_204.pdf","expected_terms":["Ceiling","80 to 90"]}
+]

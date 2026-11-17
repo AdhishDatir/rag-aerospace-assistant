@@ -5,7 +5,7 @@ from pathlib import Path
 import pymupdf
 import pytest
 
-from app.ingestion.pdf_loader import extract_pdf_pages
+from app.ingestion.pdf_loader import clean_text, extract_pdf_pages
 
 
 def test_extract_pdf_pages_preserves_text_and_page_number(tmp_path: Path) -> None:
@@ -36,3 +36,8 @@ def test_extract_pdf_pages_rejects_missing_file(tmp_path: Path) -> None:
 
     with pytest.raises(FileNotFoundError, match="PDF file not found"):
         extract_pdf_pages(missing_pdf)
+
+
+def test_clean_text_repairs_common_pdf_word_splits() -> None:
+    """Legacy PDF extraction artifacts should not break retrieval terms."""
+    assert clean_text("in� formation and dis- bonding") == "information and disbonding"

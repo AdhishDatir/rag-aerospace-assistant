@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
+import re
 
 import  pymupdf  # PyMuPDF
 
@@ -17,6 +18,11 @@ class PageText:
 
 def clean_text(text: str) -> str:
     """Normalize whitespace so extracted text is easier to search later."""
+    # Some legacy technical PDFs split words around replacement characters or
+    # line-wrap hyphens (for example, "in� formation" and "dis- bonding").
+    text = re.sub(r"(\w)�\s*(\w)", r"\1\2", text)
+    text = re.sub(r"(\w)-\s+(\w)", r"\1\2", text)
+    text = text.replace("�", "")
     return " ".join(text.split())
 
 

@@ -1,6 +1,7 @@
 """Tests for grounded local Ollama answer generation."""
 
 from app.retrieval.vector_store import SearchResult
+from app.models.schemas import Citation
 from app.services.qa_service import NOT_FOUND_MESSAGE, QAService
 
 
@@ -74,3 +75,17 @@ def test_answer_question_returns_fallback_without_evidence() -> None:
     assert result.answer == NOT_FOUND_MESSAGE
     assert result.citations == []
     assert client.request is None
+
+
+def test_answer_question_deduplicates_same_page_citations() -> None:
+    """Two chunks from one page should produce a single source citation."""
+    client = FakeHTTPClient("Visual inspection is a documented procedure.")
+    service = QAService(client, "qwen2.5:3b", "http://localhost:11434")
+    chunks = [
+        SearchResult("one", "faa.pdf", 7, "Visual inspection evidence.", 0.1),
+        SearchResult("two", "faa.pdf", 7, "More evidence from the same page.", 0.2),
+    ]
+
+    result = service.answer_question("What is visual inspection?", chunks)
+
+    assert result.citations == [Citation(document_name="faa.pdf", page_number=7)]

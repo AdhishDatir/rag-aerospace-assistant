@@ -1,0 +1,10 @@
+chromadb
+fastapi[standard]
+httpx
+openai
+pydantic-settings
+PyMuPDF
+pytest
+python-dotenv
+sentence-transformers
+streamlit
